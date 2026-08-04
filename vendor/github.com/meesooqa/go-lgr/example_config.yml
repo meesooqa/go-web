@@ -1,0 +1,14 @@
+level: info          # debug | info | warn | error
+format: json          # text | json
+output: both          # stdout | stderr | file | both
+file_path: /var/log/myapp/app.log
+
+rotation:
+  max_size_mb: 100
+  max_backups: 3
+  max_age_days: 28
+  compress: true
+
+fields:
+  service: "myapp"
+  env: "production"
