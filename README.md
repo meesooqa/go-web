@@ -4,6 +4,7 @@
 
 ## Key Features
 
+- **Global Middleware Support**: Easily apply middleware (logging, CORS, auth, etc.) to all requests using `srv.Use()`.
 - **Controller-Based Routing**: Organize related routes into controllers for better maintainability.
 - **Automatic Template Loading**: Recursively loads all `.html` files from a specified directory.
 - **Safe Rendering**: Templates are rendered to a buffer before being sent to the client, preventing "half-sent" pages with a 200 OK status on error.
@@ -57,6 +58,7 @@ import (
     "os/signal"
     "syscall"
 
+    "github.com/meesooqa/go-middleware"
     "github.com/meesooqa/go-web"
 )
 
@@ -72,6 +74,14 @@ func main() {
     if err != nil {
         panic(err)
     }
+
+    // Add global middleware
+    srv.Use(
+        middleware.Logging(slog.Default()),
+        middleware.CORS(middleware.CORSConfig{
+            AllowedOrigins: []string{"*"},
+        }),
+    )
 
     // Register controllers
     homeCtrl := &HomeController{tmpl: srv.Templates()}
@@ -91,19 +101,20 @@ func main() {
 
 The server can be configured using the `web.Config` struct. You can pass this struct to `web.New()` or use `web.Load(path)` to load configuration from a YAML file.
 
-| Field | Description | Default |
-| :--- | :--- | :--- |
-| `Host` | Address to listen on | `0.0.0.0` |
-| `Port` | TCP port | `8080` |
-| `ReadTimeout` | Max duration for reading request | `15s` |
-| `ReadHeaderTimeout` | Max duration for reading headers | `5s` |
-| `WriteTimeout` | Max duration for writing response | `15s` |
-| `IdleTimeout` | Keep-alive connection timeout | `60s` |
-| `ShutdownTimeout` | Graceful shutdown timeout | `10s` |
-| `MaxHeaderBytes` | Max total size of request headers | `1MB` |
-| `TemplatesDir` | Directory containing HTML templates | - |
-| `StaticDir` | Directory for static files | - |
-| `StaticURLPath` | URL prefix for static files | `/static/` |
+| Field | Description                                    | Default |
+| :--- |:-----------------------------------------------| :--- |
+| `Host` | Address to listen on                           | `0.0.0.0` |
+| `Port` | TCP port                                       | `8080` |
+| `ReadTimeout` | Max duration for reading request               | `15s` |
+| `ReadHeaderTimeout` | Max duration for reading headers               | `5s` |
+| `WriteTimeout` | Max duration for writing response              | `15s` |
+| `IdleTimeout` | Keep-alive connection timeout                  | `60s` |
+| `ShutdownTimeout` | Graceful shutdown timeout                      | `10s` |
+| `MaxHeaderBytes` | Max total size of request headers              | `1MB` |
+| `TemplatesDir` | Directory containing HTML templates            | - |
+| `StaticDir` | Directory for static files                     | - |
+| `StaticURLPath` | URL prefix for static files                    | `/static/` |
+| `CORS` | CORS configuration ([middleware.CORSConfig](https://github.com/meesooqa/go-middleware/blob/master/config.go)) | - |
 
 ## Examples
 

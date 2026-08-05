@@ -1,6 +1,10 @@
 package web
 
-import "time"
+import (
+	"time"
+
+	"github.com/meesooqa/go-middleware"
+)
 
 // Config describes the web server configuration
 type Config struct {
@@ -47,4 +51,7 @@ type Config struct {
 
 	// StaticURLPath is the URL prefix under which static files are served.
 	StaticURLPath string `yaml:"static_url_path" default:"/static/"`
+
+	// CORS configures the CORS headers for the CORS middleware
+	CORS middleware.CORSConfig `yaml:"cors"`
 }

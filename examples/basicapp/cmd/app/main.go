@@ -11,6 +11,7 @@ import (
 
 	"github.com/meesooqa/go-cfg"
 	"github.com/meesooqa/go-lgr"
+	"github.com/meesooqa/go-middleware"
 	"github.com/meesooqa/go-web"
 )
 
@@ -36,6 +37,11 @@ func main() {
 		logger.Error("fail to create server", "error", err)
 		os.Exit(1)
 	}
+
+	srv.Use(
+		middleware.Logging(logger),
+		middleware.CORS(conf.Server.CORS),
+	)
 
 	home := &HomeController{tmpl: srv.Templates()}
 	srv.Register(home)

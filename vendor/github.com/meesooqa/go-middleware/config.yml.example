@@ -1,0 +1,4 @@
+cors:
+  max_age: 12h
+  allowed_origins:
+    - "*"

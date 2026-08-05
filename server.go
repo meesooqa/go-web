@@ -13,16 +13,18 @@ import (
 	"sync"
 
 	"github.com/meesooqa/go-cfg"
+	"github.com/meesooqa/go-middleware"
 )
 
-// Server is a web server: a router, loaded templates,
-// and a wrapper around http.Server
+// Server is a web server: a router, a set of global middleware,
+// (optionally) loaded templates, and a wrapper around http.Server
 // with graceful shutdown support
 type Server struct {
 	config    Config
 	mux       *http.ServeMux
 	logger    *slog.Logger
 	templates *Templates
+	globalMW  []middleware.Middleware
 
 	httpSrv *http.Server
 
@@ -93,6 +95,14 @@ func (s *Server) Templates() *Templates {
 	return s.templates
 }
 
+// Use adds global middleware applied to all requests.
+// Middleware are executed in the order they are added
+// (the first added is the outermost, see middleware.Chain).
+// Call before Run
+func (s *Server) Use(mw ...middleware.Middleware) {
+	s.globalMW = append(s.globalMW, mw...)
+}
+
 // Register registers the routes of one or more controllers
 func (s *Server) Register(controllers ...Controller) {
 	for _, c := range controllers {
@@ -130,11 +140,11 @@ func (s *Server) Static(urlPath, dir string) {
 }
 
 // Handler returns the final http.Handler — the router wrapped
-// in the global middleware chain. It does not require starting the network: convenient
-// for tests (httptest.NewServer(srv.Handler())) or if you want to
-// manage the net.Listener/TLS yourself instead of using Run
+// in the global middleware chain. It does not require starting a network listener,
+// making it convenient for testing (httptest.NewServer(srv.Handler())) or if you want to
+// manage the net.Listener and TLS yourself instead of calling Run
 func (s *Server) Handler() http.Handler {
-	return s.mux
+	return middleware.Chain(s.mux, s.globalMW...)
 }
 
 // Addr returns the address the server is actually listening on, after

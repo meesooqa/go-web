@@ -4,6 +4,8 @@ github.com/meesooqa/go-cfg v0.1.1 h1:1lFms9vBaFtVGubbgT1KVpCy1EBYLGCG0U/mQzMwFN0
 github.com/meesooqa/go-cfg v0.1.1/go.mod h1:iB6VudZJHFd5yTyELh/8bltJ1AXRanty9iqGxbGIDbE=
 github.com/meesooqa/go-lgr v0.1.0 h1:hdcM122iVOKgH8jIyJo0B957jFK4wbU66ldt6KHP+eQ=
 github.com/meesooqa/go-lgr v0.1.0/go.mod h1:76KRkC37kypEJjdf5w12ONI/uAAXDAwinfiAhvJ3tUo=
+github.com/meesooqa/go-middleware v0.1.0 h1:m8rrG20W7fqnuy5KquwzILbFnVb9w8Uik/vNF24PVd4=
+github.com/meesooqa/go-middleware v0.1.0/go.mod h1:1NvpMzDLwatvI4Y/7PWj/y4nCkxap2+fnSaPCmb5gTA=
 gopkg.in/check.v1 v0.0.0-20161208181325-20d25e280405 h1:yhCVgyC4o1eVCa2tZl7eS0r+SDo693bJlVdllGtEeKM=
 gopkg.in/check.v1 v0.0.0-20161208181325-20d25e280405/go.mod h1:Co6ibVJAznAaIkqp8huTwlJQCZ016jof/cbN4VW5Yz0=
 gopkg.in/natefinch/lumberjack.v2 v2.2.1 h1:bBRl1b0OH9s/DuPhuXpNl+VtCaJXFZ5/uEFST95x9zc=

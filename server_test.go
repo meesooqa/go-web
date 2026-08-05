@@ -161,3 +161,33 @@ func TestServer_StaticFromConfig(t *testing.T) {
 		t.Errorf("status = %d, expected 200 (StaticDir from Config should be enabled automatically)", resp.StatusCode)
 	}
 }
+
+func TestServer_Use_AppliesGlobalMiddleware(t *testing.T) {
+	srv, err := New(testConfig(), nil)
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+
+	srv.Use(func(next http.Handler) http.Handler {
+		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			w.Header().Set("X-Global-Middleware", "applied")
+			next.ServeHTTP(w, r)
+		})
+	})
+	srv.HandleFunc("GET /check", func(w http.ResponseWriter, r *http.Request) {
+		w.WriteHeader(http.StatusOK)
+	})
+
+	ts := httptest.NewServer(srv.Handler())
+	defer ts.Close()
+
+	resp, err := http.Get(ts.URL + "/check")
+	if err != nil {
+		t.Fatalf("request expected: %v", err)
+	}
+	defer resp.Body.Close()
+
+	if got := resp.Header.Get("X-Global-Middleware"); got != "applied" {
+		t.Errorf("X-Global-Middleware = %q, expected %q", got, "applied")
+	}
+}

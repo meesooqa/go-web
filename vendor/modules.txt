@@ -7,6 +7,9 @@ github.com/meesooqa/go-cfg
 # github.com/meesooqa/go-lgr v0.1.0
 ## explicit; go 1.26
 github.com/meesooqa/go-lgr
+# github.com/meesooqa/go-middleware v0.1.0
+## explicit; go 1.26
+github.com/meesooqa/go-middleware
 # gopkg.in/natefinch/lumberjack.v2 v2.2.1
 ## explicit; go 1.13
 gopkg.in/natefinch/lumberjack.v2
