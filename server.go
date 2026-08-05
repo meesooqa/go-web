@@ -118,9 +118,7 @@ func (s *Server) Handle(pattern string, h http.Handler) {
 // Config.StaticDir is set — use it directly only if you need
 // to serve more than one static directory
 func (s *Server) Static(urlPath, dir string) {
-
-	s.logger.Info("registering static", "urlPath", urlPath, "dir", dir)
-
+	//s.logger.Debug("registering static", "urlPath", urlPath, "dir", dir)
 	if !strings.HasPrefix(urlPath, "/") {
 		urlPath = "/" + urlPath
 	}
