@@ -19,6 +19,7 @@ import (
 type AppConfig struct {
 	Logger lgr.Config `yaml:"logger"`
 	Server web.Config `yaml:"server"`
+	Auth   middleware.BasicAuthConfig
 }
 
 func main() {
@@ -43,7 +44,10 @@ func main() {
 		middleware.CORS(conf.Server.CORS),
 	)
 
-	home := &HomeController{tmpl: srv.Templates()}
+	home := &HomeController{
+		tmpl:    srv.Templates(),
+		authCfg: conf.Auth,
+	}
 	srv.Register(home)
 
 	// Graceful shutdown по Ctrl+C / SIGTERM.
@@ -60,13 +64,21 @@ func main() {
 
 type HomeController struct {
 	tmpl    *web.Templates
-	authCfg *middleware.BasicAuthConfig
+	authCfg middleware.BasicAuthConfig
 }
 
 func (c *HomeController) Routes() []web.Route {
+	auth := func(h http.HandlerFunc) http.HandlerFunc {
+		handler := middleware.BasicAuth(c.authCfg)(h)
+		return func(w http.ResponseWriter, r *http.Request) {
+			handler.ServeHTTP(w, r)
+		}
+	}
+
 	return []web.Route{
 		{Pattern: "GET /", Handler: c.index},
 		{Pattern: "GET /about", Handler: c.about},
+		{Pattern: "GET /admin", Handler: auth(c.admin)},
 	}
 }
 
@@ -84,6 +96,15 @@ func (c *HomeController) index(w http.ResponseWriter, r *http.Request) {
 func (c *HomeController) about(w http.ResponseWriter, r *http.Request) {
 	if err := c.tmpl.Render(w, http.StatusOK, "about.html", map[string]any{
 		"Title": "About",
+	}); err != nil {
+		lgr.FromContext(r.Context()).Error("rendering error", "error", err)
+		http.Error(w, "internal server error", http.StatusInternalServerError)
+	}
+}
+
+func (c *HomeController) admin(w http.ResponseWriter, r *http.Request) {
+	if err := c.tmpl.Render(w, http.StatusOK, "admin.html", map[string]any{
+		"Title": "Admin",
 	}); err != nil {
 		lgr.FromContext(r.Context()).Error("rendering error", "error", err)
 		http.Error(w, "internal server error", http.StatusInternalServerError)
