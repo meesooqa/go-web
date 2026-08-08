@@ -22,7 +22,7 @@ type AppConfig struct {
 }
 
 func main() {
-	conf, err := cfg.Load[AppConfig]("etc/config.yml")
+	conf, err := cfg.Load[AppConfig]("etc/config.yml", ".env")
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -59,7 +59,8 @@ func main() {
 }
 
 type HomeController struct {
-	tmpl *web.Templates
+	tmpl    *web.Templates
+	authCfg *middleware.BasicAuthConfig
 }
 
 func (c *HomeController) Routes() []web.Route {
