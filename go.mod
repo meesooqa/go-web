@@ -5,7 +5,7 @@ go 1.26
 require (
 	github.com/meesooqa/go-cfg v0.1.1
 	github.com/meesooqa/go-lgr v0.1.0
-	github.com/meesooqa/go-middleware v0.1.0
+	github.com/meesooqa/go-middleware v0.2.0
 )
 
 require (

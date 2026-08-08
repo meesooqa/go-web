@@ -15,6 +15,8 @@ A lightweight, standard-compliant HTTP middleware library for Go.
   - Configurable allowed origins, methods, and headers.
   - Intelligent handling of `AllowCredentials` and wildcard origins to comply with browser security specifications.
   - Built-in support for preflight `OPTIONS` requests.
+- **Basic Authentication**:
+  - Simple protection for administrative routes using `ADMIN_USER` and `ADMIN_PASS` environment variables.
 
 ## Installation
 
@@ -77,6 +79,37 @@ corsMw := middleware.CORS(middleware.CORSConfig{
     AllowCredentials: true,
     MaxAge:           12 * time.Hour,
 })
+```
+
+### Basic Authentication
+
+The `BasicAuth` middleware protects routes using HTTP Basic Authentication. It is configured via the `BasicAuthConfig` struct, making it compatible with `github.com/meesooqa/go-cfg`.
+
+Example of protecting only the `/admin` section:
+
+```go
+mux := http.NewServeMux()
+
+// Public route
+mux.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
+    w.Write([]byte("Public Home"))
+})
+
+// Protected admin route
+adminHandler := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+    w.Write([]byte("Welcome to the Admin Panel"))
+})
+
+// Define authentication config
+authCfg := middleware.BasicAuthConfig{
+    User:     "admin",
+    Password: "secure-password",
+}
+
+// Wrap only the admin handler with BasicAuth
+mux.Handle("/admin", middleware.BasicAuth(authCfg)(adminHandler))
+
+http.ListenAndServe(":8080", mux)
 ```
 
 ## Configuration
