@@ -2,4 +2,9 @@ test:
 	go clean -testcache
 	go test ./...
 
-.PHONY: test
+upd:
+	go get -u ./...
+	go mod tidy
+	go mod vendor
+
+.PHONY: test upd
