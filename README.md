@@ -5,6 +5,7 @@
 ## Key Features
 
 - **Global Middleware Support**: Easily apply middleware (logging, CORS, auth, etc.) to all requests using `srv.Use()`.
+- **Custom Not Found Handler**: Set a custom handler for 404 responses using `srv.NotFoundHandler()`.
 - **Controller-Based Routing**: Organize related routes into controllers for better maintainability.
 - **Automatic Template Loading**: Recursively loads all `.html` files from a specified directory.
 - **Safe Rendering**: Templates are rendered to a buffer before being sent to the client, preventing "half-sent" pages with a 200 OK status on error.
@@ -32,7 +33,7 @@ type HomeController struct {
 
 func (c *HomeController) Routes() []web.Route {
     return []web.Route{
-        {Pattern: "GET /", Handler: c.Index},
+        {Pattern: "GET /{$}", Handler: c.Index},
         {Pattern: "GET /about", Handler: c.About},
     }
 }
@@ -86,6 +87,13 @@ func main() {
     // Register controllers
     homeCtrl := &HomeController{tmpl: srv.Templates()}
     srv.Register(homeCtrl)
+
+    // Set custom 404 handler
+    srv.NotFoundHandler(func(w http.ResponseWriter, r *http.Request) {
+        homeCtrl.tmpl.Render(w, http.StatusNotFound, \"404.html\", map[string]any{
+            \"Path\": r.URL.Path,
+        })
+    })
 
     // Handle graceful shutdown
     ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)

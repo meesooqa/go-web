@@ -20,11 +20,12 @@ import (
 // (optionally) loaded templates, and a wrapper around http.Server
 // with graceful shutdown support
 type Server struct {
-	config    Config
-	mux       *http.ServeMux
-	logger    *slog.Logger
-	templates *Templates
-	globalMW  []middleware.Middleware
+	config          Config
+	mux             *http.ServeMux
+	logger          *slog.Logger
+	templates       *Templates
+	globalMW        []middleware.Middleware
+	notFoundHandler http.HandlerFunc
 
 	httpSrv *http.Server
 
@@ -52,10 +53,11 @@ func New(c Config, logger *slog.Logger, opts ...Option) (*Server, error) {
 	}
 
 	s := &Server{
-		config: c,
-		mux:    http.NewServeMux(),
-		logger: logger,
-		ready:  make(chan struct{}),
+		config:          c,
+		mux:             http.NewServeMux(),
+		logger:          logger,
+		ready:           make(chan struct{}),
+		notFoundHandler: http.NotFound,
 	}
 
 	for _, opt := range opts {
@@ -103,6 +105,16 @@ func (s *Server) Use(mw ...middleware.Middleware) {
 	s.globalMW = append(s.globalMW, mw...)
 }
 
+// NotFoundHandler sets a custom handler for when no route matches.
+// If h is nil, the default http.NotFound handler is restored.
+func (s *Server) NotFoundHandler(h http.HandlerFunc) {
+	if h == nil {
+		s.notFoundHandler = http.NotFound
+	} else {
+		s.notFoundHandler = h
+	}
+}
+
 // Register registers the routes of one or more controllers
 func (s *Server) Register(controllers ...Controller) {
 	for _, c := range controllers {
@@ -144,7 +156,16 @@ func (s *Server) Static(urlPath, dir string) {
 // making it convenient for testing (httptest.NewServer(srv.Handler())) or if you want to
 // manage the net.Listener and TLS yourself instead of calling Run
 func (s *Server) Handler() http.Handler {
-	return middleware.Chain(s.mux, s.globalMW...)
+	return middleware.Chain(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		h, pattern := s.mux.Handler(r)
+
+		if pattern == "" {
+			s.notFoundHandler(w, r)
+			return
+		}
+
+		h.ServeHTTP(w, r)
+	}), s.globalMW...)
 }
 
 // Addr returns the address the server is actually listening on, after

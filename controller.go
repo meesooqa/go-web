@@ -4,7 +4,7 @@ import "net/http"
 
 // Route describes a single controller route.
 // Pattern is a standard net/http.ServeMux pattern (Go 1.22+),
-// e.g., "GET /", "POST /login", "GET /users/{id}".
+// e.g., "GET /{$}", "POST /login", "GET /users/{id}".
 // If no method is specified at the beginning, the route responds to any HTTP method.
 type Route struct {
 	Pattern string
@@ -23,7 +23,7 @@ type Route struct {
 //
 //	func (c *HomeController) Routes() []web.Route {
 //		return []web.Route{
-//			{Pattern: "GET /", Handler: c.Index},
+//			{Pattern: "GET /{$}", Handler: c.Index},
 //			{Pattern: "GET /about", Handler: c.About},
 //		}
 //	}

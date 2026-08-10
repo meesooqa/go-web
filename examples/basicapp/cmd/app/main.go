@@ -50,6 +50,9 @@ func main() {
 	}
 	srv.Register(home)
 
+	// Set custom 404 handler.
+	srv.NotFoundHandler(home.notFound)
+
 	// Graceful shutdown по Ctrl+C / SIGTERM.
 	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
 	defer stop()
@@ -76,15 +79,13 @@ func (c *HomeController) Routes() []web.Route {
 	}
 
 	return []web.Route{
-		{Pattern: "GET /", Handler: c.index},
+		{Pattern: "GET /{$}", Handler: c.index},
 		{Pattern: "GET /about", Handler: c.about},
 		{Pattern: "GET /admin", Handler: auth(c.admin)},
 	}
 }
 
 func (c *HomeController) index(w http.ResponseWriter, r *http.Request) {
-	lgr.FromContext(r.Context()).Debug("rendering the home page")
-
 	if err := c.tmpl.Render(w, http.StatusOK, "index.html", map[string]any{
 		"Title": "Main",
 	}); err != nil {
@@ -108,5 +109,14 @@ func (c *HomeController) admin(w http.ResponseWriter, r *http.Request) {
 	}); err != nil {
 		lgr.FromContext(r.Context()).Error("rendering error", "error", err)
 		http.Error(w, "internal server error", http.StatusInternalServerError)
+	}
+}
+
+func (c *HomeController) notFound(w http.ResponseWriter, r *http.Request) {
+	if err := c.tmpl.Render(w, http.StatusNotFound, "404.html", map[string]any{
+		"Path": r.URL.Path,
+	}); err != nil {
+		lgr.FromContext(r.Context()).Error("rendering 404 error", "error", err)
+		http.Error(w, "page not found", http.StatusNotFound)
 	}
 }
